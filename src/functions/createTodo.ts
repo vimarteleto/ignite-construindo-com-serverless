@@ -1,7 +1,7 @@
 
 import { APIGatewayProxyHandler } from 'aws-lambda';
 import { document } from '../utils/dynamodbClient';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4, validate } from 'uuid';
 
 interface ICreateTodo {
     title: string;
@@ -19,6 +19,19 @@ interface ITemplate {
 export const handle: APIGatewayProxyHandler = async (event) => {
     const { user_id } = event.pathParameters
     const { title, deadline } = JSON.parse(event.body) as ICreateTodo
+
+    if (!validate(user_id)) {
+        return {
+            statusCode: 400,
+            body: JSON.stringify({
+                error: 'Invalid user',
+            }),
+            headers: {
+                'Content-type': 'application/json'
+            }
+        }
+    }
+        
 
     const todo: ITemplate = {
         id: uuidv4(),
